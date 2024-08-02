@@ -1,21 +1,17 @@
 ﻿@page "/maze"
+@inject MazeGame.Services.PlayerState PlayerState
+@inject MazeGame.Services.GridState GridState
+@using MazeGame.Services
 @rendermode InteractiveServer
+
 <h3>Maze</h3>
 
-<div class="controls">
-    <div class="grid">
-        @for (int i = 0; i < grid.GetLength(0); i++)
-        {
-            <div class="row">
-                @for (int j = 0; j < grid.GetLength(1); j++)
-                {
-                    <div class="cell @(grid[i, j] == 1 ? "wall" : "path") @(i == playerX && j == playerY ? "player" : "")">
-                    </div>
-                }
-            </div>
-        }
-    </div>
+<div>
+    <p>Player Position: X = @PlayerState.PlayerX, Y = @PlayerState.PlayerY</p>
 </div>
+
+
+<Labyrinth Grid="GridState.Grid" PlayerX="PlayerState.PlayerX" PlayerY="PlayerState.PlayerY" />
 
 @if (hasWon)
 {
@@ -76,8 +72,17 @@ else
     }
 
     .wall {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         background-color: greenyellow;
+        border: 1px solid #000;
     }
+
+        .wall::before {
+            content: "🌳";
+            font-size: 1.5em;
+        }
 
     .path {
         background-color: sandybrown;
@@ -122,53 +127,55 @@ else
 </style>
 
 @code {
-    private int[,] grid = new int[,]
-    {
-        { 1, 1, 1, 1, 1, 1 },
-        { 1, 0, 0, 0, 0, 1 },
-        { 1, 0, 1, 1, 0, 1 },
-        { 1, 0, 1, 0, 0, 1 },
-        { 1, 0, 0, 0, 1, 1 },
-        { 1, 1, 1, 0, 1, 1 }
-    };
 
-    private int playerX = 1;
-    private int playerY = 1;
+    @* protected override void OnInitialized()
+    {
+        PlayerState.PlayerX = 1;
+        PlayerState.PlayerY = 1;
+    } *@
+
     private bool hasWon = false;
 
     private void MoveUp()
     {
-        if (playerX > 0 && grid[playerX - 1, playerY] == 0)
+        if (PlayerState.PlayerX > 0 && GridState.Grid[PlayerState.PlayerX - 1, PlayerState.PlayerY] == 0)
         {
-            playerX--;
+            PlayerState.PlayerX--;
             CheckVictory();
+            StateHasChanged();
         }
     }
 
     private void MoveDown()
     {
-        if (playerX < grid.GetLength(0) - 1 && grid[playerX + 1, playerY] == 0)
+        if (PlayerState.PlayerX < GridState.Grid.GetLength(0) - 1 && GridState.Grid[PlayerState.PlayerX + 1, PlayerState.PlayerY] == 0)
         {
-            playerX++;
+            PlayerState.PlayerX++;
             CheckVictory();
+            StateHasChanged();
+
         }
     }
 
     private void MoveLeft()
     {
-        if (playerY > 0 && grid[playerX, playerY - 1] == 0)
+        if (PlayerState.PlayerY > 0 && GridState.Grid[PlayerState.PlayerX, PlayerState.PlayerY - 1] == 0)
         {
-            playerY--;
+            PlayerState.PlayerY--;
             CheckVictory();
+            StateHasChanged();
+
         }
     }
 
     private void MoveRight()
     {
-        if (playerY < grid.GetLength(1) - 1 && grid[playerX, playerY + 1] == 0)
+        if (PlayerState.PlayerY < GridState.Grid.GetLength(1) - 1 && GridState.Grid[PlayerState.PlayerX, PlayerState.PlayerY + 1] == 0)
         {
-            playerY++;
+            PlayerState.PlayerY++;
             CheckVictory();
+            StateHasChanged();
+
         }
     }
 
@@ -182,10 +189,12 @@ else
 
     private void ResetGame()
     {
-        playerX = 1;
-        playerY = 1;
+        PlayerState.PlayerX = 1;
+        PlayerState.PlayerY = 1;
         hasWon = false;
+        StateHasChanged();
+
     }
 
-    private bool IsVictory() => playerX == 5 || playerY == 5;
+    private bool IsVictory() => PlayerState.PlayerX == 5 || PlayerState.PlayerY == 5;
 }

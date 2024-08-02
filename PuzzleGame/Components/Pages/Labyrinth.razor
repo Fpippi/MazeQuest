@@ -1,0 +1,21 @@
+﻿<div class="controls">
+    <div class="grid">
+        @for (int i = 0; i < Grid.GetLength(0); i++)
+        {
+            <div class="row">
+                @for (int j = 0; j < Grid.GetLength(1); j++)
+                {
+                    <div class="cell @(Grid[i, j] == 1 ? "wall" : "path") @(i == PlayerX && j == PlayerY ? "player" : "")">
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public required int[,] Grid { get; set; }
+    [Parameter] public required int PlayerX { get; set; }
+    [Parameter] public required int PlayerY { get; set; }
+}
