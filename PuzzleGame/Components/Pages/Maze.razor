@@ -2,26 +2,62 @@
 @rendermode InteractiveServer
 <h3>Maze</h3>
 
-<div class="grid">
-    @for (int i = 0; i < grid.GetLength(0); i++)
-    {
-        <div class="row">
-            @for (int j = 0; j < grid.GetLength(1); j++)
-            {
-                <div class="cell @(grid[i, j] == 1 ? "wall" : "path") @(i == playerX && j == playerY ? "player" : "")"></div>
-            }
-        </div>
-    }
+<div class="controls">
+    <div class="grid">
+        @for (int i = 0; i < grid.GetLength(0); i++)
+        {
+            <div class="row">
+                @for (int j = 0; j < grid.GetLength(1); j++)
+                {
+                    <div class="cell @(grid[i, j] == 1 ? "wall" : "path") @(i == playerX && j == playerY ? "player" : "")">
+                    </div>
+                }
+            </div>
+        }
+    </div>
 </div>
 
-<div class="controls">
-    <button @onclick="MoveUp">Su</button>
-    <button @onclick="MoveDown">Giù</button>
-    <button @onclick="MoveLeft">Sinistra</button>
-    <button @onclick="MoveRight">Destra</button>
-</div>
+@if (hasWon)
+{
+    <div class="victory-message controls">
+        Hai vinto!
+    </div>
+    <button class="controls" @onclick="ResetGame">Reset</button>
+}
+else
+{
+    <div class="controls">
+        <div style="display: flex; justify-content: center;">
+            <button class="control-button" style="order: 1;" @onclick="MoveUp">⬆️</button>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <button class="control-button" style="order: 2;" @onclick="MoveLeft">⬅️</button>
+            <button class="control-button" style="order: 3;" @onclick="MoveRight">➡️</button>
+        </div>
+        <div style="display: flex; justify-content: center;">
+            <button class="control-button" style="order: 4;" @onclick="MoveDown">⬇️</button>
+        </div>
+    </div>
+}
 
 <style>
+    .control-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5em;
+        border: none;
+        background-color: #F5F5F5;
+        color: #4A3F2D;
+        cursor: pointer;
+    }
+
+    .controls {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
     .grid {
         display: grid;
         grid-template-rows: repeat(6, 30px);
@@ -42,49 +78,46 @@
     .wall {
         background-color: greenyellow;
     }
-    .wall::before{
-            content: "🌳";
-        }
 
     .path {
         background-color: sandybrown;
     }
 
     .player {
-        background-color: #4A3F2D; /* Colore marrone scuro per un aspetto più terroso */
-        border: 3px solid #D4AF37; /* Bordo dorato per aggiungere un tocco di prestigio */
-        border-radius: 15px; /* Angoli arrotondati ma non eccessivamente per un look più robusto */
-        padding: 15px; /* Spaziatura interna per migliorare la visualizzazione */
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); /* Ombra per dare profondità */
+        background-color: #4A3F2D;
+        border: 3px solid #D4AF37;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
         z-index: 1;
-        font-family: 'Cinzel', serif; /* Font classico ma con un tocco più decorativo */
-        color: #F5F5F5; /* Testo chiaro per contrastare con lo sfondo scuro */
-        text-align: center; /* Centrato per dare un aspetto più ordinato */
-        position: relative; /* Per eventuali elementi aggiuntivi come icone o decorazioni */
+        font-family: 'Cinzel', serif;
+        color: #F5F5F5;
+        text-align: center;
+        position: relative;
     }
 
-        .player::before {
-            content: "🛡️"; /* Icona di spada per aggiungere un tocco di avventura */
-            font-size: 2em;
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
+    .player::before {
+        content: "🛡️";
+        font-size: 2em;
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 
-        .player::after {
-            content: "👑"; /* Icona di medaglia per aggiungere un senso di conquista */
-            font-size: 1.5em;
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
+    .player::after {
+        content: "👑";
+        font-size: 1.5em;
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 
-
-
-    .controls {
-        margin-top: 10px;
+    .victory-message {
+        margin-top: 20px;
+        font-size: 1.5em;
+        color: green;
     }
 </style>
 
@@ -101,13 +134,14 @@
 
     private int playerX = 1;
     private int playerY = 1;
+    private bool hasWon = false;
 
     private void MoveUp()
     {
         if (playerX > 0 && grid[playerX - 1, playerY] == 0)
         {
             playerX--;
-            // await InvokeAsync(StateHasChanged);
+            CheckVictory();
         }
     }
 
@@ -116,7 +150,7 @@
         if (playerX < grid.GetLength(0) - 1 && grid[playerX + 1, playerY] == 0)
         {
             playerX++;
-            // await InvokeAsync(StateHasChanged);
+            CheckVictory();
         }
     }
 
@@ -125,7 +159,7 @@
         if (playerY > 0 && grid[playerX, playerY - 1] == 0)
         {
             playerY--;
-            // await InvokeAsync(StateHasChanged);
+            CheckVictory();
         }
     }
 
@@ -134,9 +168,24 @@
         if (playerY < grid.GetLength(1) - 1 && grid[playerX, playerY + 1] == 0)
         {
             playerY++;
-            // await InvokeAsync(StateHasChanged);
+            CheckVictory();
         }
     }
 
-    private bool IsVictory() => playerX == 4 && playerY == 4; // Modifica la posizione di vittoria se necessario
+    private void CheckVictory()
+    {
+        if (IsVictory())
+        {
+            hasWon = true;
+        }
+    }
+
+    private void ResetGame()
+    {
+        playerX = 1;
+        playerY = 1;
+        hasWon = false;
+    }
+
+    private bool IsVictory() => playerX == 5 || playerY == 5;
 }
