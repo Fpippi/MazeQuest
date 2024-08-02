@@ -1,0 +1,142 @@
+﻿@page "/maze"
+@rendermode InteractiveServer
+<h3>Maze</h3>
+
+<div class="grid">
+    @for (int i = 0; i < grid.GetLength(0); i++)
+    {
+        <div class="row">
+            @for (int j = 0; j < grid.GetLength(1); j++)
+            {
+                <div class="cell @(grid[i, j] == 1 ? "wall" : "path") @(i == playerX && j == playerY ? "player" : "")"></div>
+            }
+        </div>
+    }
+</div>
+
+<div class="controls">
+    <button @onclick="MoveUp">Su</button>
+    <button @onclick="MoveDown">Giù</button>
+    <button @onclick="MoveLeft">Sinistra</button>
+    <button @onclick="MoveRight">Destra</button>
+</div>
+
+<style>
+    .grid {
+        display: grid;
+        grid-template-rows: repeat(6, 30px);
+        grid-template-columns: repeat(6, 30px);
+    }
+
+    .row {
+        display: contents;
+    }
+
+    .cell {
+        width: 30px;
+        height: 30px;
+        border: 1px solid black;
+        box-sizing: border-box;
+    }
+
+    .wall {
+        background-color: greenyellow;
+    }
+    .wall::before{
+            content: "🌳";
+        }
+
+    .path {
+        background-color: sandybrown;
+    }
+
+    .player {
+        background-color: #4A3F2D; /* Colore marrone scuro per un aspetto più terroso */
+        border: 3px solid #D4AF37; /* Bordo dorato per aggiungere un tocco di prestigio */
+        border-radius: 15px; /* Angoli arrotondati ma non eccessivamente per un look più robusto */
+        padding: 15px; /* Spaziatura interna per migliorare la visualizzazione */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); /* Ombra per dare profondità */
+        z-index: 1;
+        font-family: 'Cinzel', serif; /* Font classico ma con un tocco più decorativo */
+        color: #F5F5F5; /* Testo chiaro per contrastare con lo sfondo scuro */
+        text-align: center; /* Centrato per dare un aspetto più ordinato */
+        position: relative; /* Per eventuali elementi aggiuntivi come icone o decorazioni */
+    }
+
+        .player::before {
+            content: "🛡️"; /* Icona di spada per aggiungere un tocco di avventura */
+            font-size: 2em;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .player::after {
+            content: "👑"; /* Icona di medaglia per aggiungere un senso di conquista */
+            font-size: 1.5em;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+
+
+    .controls {
+        margin-top: 10px;
+    }
+</style>
+
+@code {
+    private int[,] grid = new int[,]
+    {
+        { 1, 1, 1, 1, 1, 1 },
+        { 1, 0, 0, 0, 0, 1 },
+        { 1, 0, 1, 1, 0, 1 },
+        { 1, 0, 1, 0, 0, 1 },
+        { 1, 0, 0, 0, 1, 1 },
+        { 1, 1, 1, 0, 1, 1 }
+    };
+
+    private int playerX = 1;
+    private int playerY = 1;
+
+    private void MoveUp()
+    {
+        if (playerX > 0 && grid[playerX - 1, playerY] == 0)
+        {
+            playerX--;
+            // await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void MoveDown()
+    {
+        if (playerX < grid.GetLength(0) - 1 && grid[playerX + 1, playerY] == 0)
+        {
+            playerX++;
+            // await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void MoveLeft()
+    {
+        if (playerY > 0 && grid[playerX, playerY - 1] == 0)
+        {
+            playerY--;
+            // await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void MoveRight()
+    {
+        if (playerY < grid.GetLength(1) - 1 && grid[playerX, playerY + 1] == 0)
+        {
+            playerY++;
+            // await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private bool IsVictory() => playerX == 4 && playerY == 4; // Modifica la posizione di vittoria se necessario
+}
