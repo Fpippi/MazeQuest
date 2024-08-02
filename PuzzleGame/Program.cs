@@ -1,6 +1,9 @@
+using MazeGame.Services;
 using PuzzleGame.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<PlayerState>();
+builder.Services.AddSingleton<GridState>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
