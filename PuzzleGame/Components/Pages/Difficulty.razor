@@ -1,0 +1,42 @@
+﻿@inject MazeGame.Services.GridState GridState
+@rendermode InteractiveServer
+
+<h3>Difficulty</h3>
+
+    <div>
+        <p>difficulty: @SelectedDifficulty</p>
+    </div>
+    <div>
+        <label>
+            <input type="radio" name="difficulty" value="easy" @onchange="() => SelectedDifficulty = MazeGame.Services.Difficulty.Easy" /> Easy
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="radio" name="difficulty" value="medium" @onchange="() => SelectedDifficulty = MazeGame.Services.Difficulty.Medium" /> Medium
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="radio" name="difficulty" value="hard" @onchange="() => SelectedDifficulty = MazeGame.Services.Difficulty.Hard" /> Hard
+        </label>
+    </div>
+
+<button @onclick="HandleButtonClick">Click me</button>
+
+@code {
+
+    [Parameter] public MazeGame.Services.Difficulty SelectedDifficulty { get; set; }
+
+    [Parameter] public EventCallback<int[,]> GridChanged { get; set; }
+
+    private async Task HandleButtonClick()
+    {
+        if (SelectedDifficulty != MazeGame.Services.Difficulty.None)
+        {
+            GridState.Grid = GridState.RandomGrid(SelectedDifficulty);
+            GridState.DifficultyChosen = SelectedDifficulty;
+            await GridChanged.InvokeAsync(GridState.Grid);
+        }
+    }
+}

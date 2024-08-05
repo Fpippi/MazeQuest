@@ -1,21 +1,66 @@
-﻿<div class="controls">
-    <div class="grid">
-        @for (int i = 0; i < Grid.GetLength(0); i++)
-        {
-            <div class="row">
-                @for (int j = 0; j < Grid.GetLength(1); j++)
-                {
-                    <div class="cell @(Grid[i, j] == 1 ? "wall" : "path") @(i == PlayerX && j == PlayerY ? "player" : "")">
-                    </div>
-                }
-            </div>
-        }
+﻿@using MazeGame.Services
+@inject MazeGame.Services.GridState GridState
+@using static MazeGame.Services.Difficulty
+@rendermode InteractiveServer
+
+@if (Difficulty != MazeGame.Services.Difficulty.None)
+{
+    <div class="controls">
+        <div class="grid">
+            @RenderGrid()
+        </div>
     </div>
-</div>
+}
+
+<style>
+    .grid {
+        display: grid;
+        grid-template-rows: repeat(@GridState.Grid.GetLength(0), 30px);
+        grid-template-columns: repeat(@GridState.Grid.GetLength(1), 30px);
+    }
+
+    .row {
+        display: contents;
+    }
+
+</style>
 
 
 @code {
-    [Parameter] public required int[,] Grid { get; set; }
+
+    [Parameter] public required int[,] Grid { get; set; } 
     [Parameter] public required int PlayerX { get; set; }
     [Parameter] public required int PlayerY { get; set; }
+    [Parameter] public required MazeGame.Services.Difficulty Difficulty { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        
+        if (Difficulty != MazeGame.Services.Difficulty.None)
+        {
+            Grid = GridState.RandomGrid(Difficulty);
+        }
+    }
+
+    private RenderFragment RenderGrid()
+    {
+        return builder =>
+        {
+            for (int i = 0; i < GridState.Grid.GetLength(0); i++)
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "row");
+
+                for (int j = 0; j < GridState.Grid.GetLength(1); j++)
+                {
+                    builder.OpenElement(2, "div");
+                    builder.AddAttribute(3, "class", $"cell {(GridState.Grid[i, j] == 1 ? "wall" : "path")} {(i == PlayerX && j == PlayerY ? "player" : "")}");
+                    builder.CloseElement();
+                }
+
+                builder.CloseElement();
+            }
+        };
+    }
 }
