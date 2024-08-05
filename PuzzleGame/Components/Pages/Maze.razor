@@ -6,11 +6,15 @@
 
 <h3>Maze</h3>
 
-@if (GridState.DifficultyChosen != MazeGame.Services.Difficulty.None)
+@if (GridState.DifficultyChosen != MazeGame.Services.Difficulty.None && !hasWon)
 {
     <div>
         <p>Player Position: X = @PlayerState.PlayerX, Y = @PlayerState.PlayerY</p>
     </div>
+    <div class="controls">
+        <button class="controls" @onclick="ResetGame">Abbandona</button>
+    </div>
+
     <Labyrinth Grid="GridState.Grid" PlayerX="PlayerState.PlayerX" PlayerY="PlayerState.PlayerY" Difficulty="GridState.DifficultyChosen" />
     <div class="controls">
         <div style="display: flex; justify-content: center;">
@@ -24,18 +28,21 @@
             <button class="control-button" style="order: 4;" @onclick="MoveDown">⬇️</button>
         </div>
     </div>
-}
-else
-{
-    <Difficulty GridChanged="@SetGrid" />
-}
 
-@if (hasWon)
+}
+else if (@hasWon)
 {
     <div class="victory-message controls">
         Hai vinto!
     </div>
-    <button class="controls" @onclick="ResetGame">Reset</button>
+    <div class="controls">
+        <button class="controls" @onclick="ResetGame">Reset</button>
+    </div>
+
+}
+else
+{
+    <Difficulty GridChanged="@SetGrid" />
 }
 
 <style>
@@ -71,10 +78,10 @@ else
         border: 1px solid #000;
     }
 
-    .wall::before {
-        content: "🌳";
-        font-size: 1.5em;
-    }
+        .wall::before {
+            content: "🌳";
+            font-size: 1.5em;
+        }
 
     .path {
         background-color: sandybrown;
@@ -93,23 +100,23 @@ else
         position: relative;
     }
 
-    .player::before {
-        content: "🛡️";
-        font-size: 2em;
-        position: absolute;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
+        .player::before {
+            content: "🛡️";
+            font-size: 2em;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
 
-    .player::after {
-        content: "👑";
-        font-size: 1.5em;
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
+        .player::after {
+            content: "👑";
+            font-size: 1.5em;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
 
     .victory-message {
         margin-top: 20px;
@@ -260,7 +267,7 @@ else
     }
 
 
-    
+
     private bool IsVictory()
     {
         int lastRow = GridState.Grid.GetLength(0) - 1;
