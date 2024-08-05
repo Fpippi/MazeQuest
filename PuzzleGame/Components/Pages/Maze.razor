@@ -10,18 +10,11 @@
     <p>Player Position: X = @PlayerState.PlayerX, Y = @PlayerState.PlayerY</p>
 </div>
 
+<Difficulty GridChanged="@SetGrid" />
 
-<Labyrinth Grid="GridState.Grid" PlayerX="PlayerState.PlayerX" PlayerY="PlayerState.PlayerY" />
-
-@if (hasWon)
+@if(GridState.DifficultyChosen != MazeGame.Services.Difficulty.None)
 {
-    <div class="victory-message controls">
-        Hai vinto!
-    </div>
-    <button class="controls" @onclick="ResetGame">Reset</button>
-}
-else
-{
+    <Labyrinth Grid="GridState.Grid" PlayerX="PlayerState.PlayerX" PlayerY="PlayerState.PlayerY" Difficulty="GridState.DifficultyChosen" />
     <div class="controls">
         <div style="display: flex; justify-content: center;">
             <button class="control-button" style="order: 1;" @onclick="MoveUp">⬆️</button>
@@ -34,6 +27,14 @@ else
             <button class="control-button" style="order: 4;" @onclick="MoveDown">⬇️</button>
         </div>
     </div>
+}
+
+@if (hasWon)
+{
+    <div class="victory-message controls">
+        Hai vinto!
+    </div>
+    <button class="controls" @onclick="ResetGame">Reset</button>
 }
 
 <style>
@@ -79,10 +80,10 @@ else
         border: 1px solid #000;
     }
 
-        .wall::before {
-            content: "🌳";
-            font-size: 1.5em;
-        }
+    .wall::before {
+        content: "🌳";
+        font-size: 1.5em;
+    }
 
     .path {
         background-color: sandybrown;
@@ -127,12 +128,6 @@ else
 </style>
 
 @code {
-
-    @* protected override void OnInitialized()
-    {
-        PlayerState.PlayerX = 1;
-        PlayerState.PlayerY = 1;
-    } *@
 
     private bool hasWon = false;
 
@@ -194,6 +189,11 @@ else
         hasWon = false;
         StateHasChanged();
 
+    }
+
+    private void SetGrid(int[,] grid)
+    {
+        GridState.Grid = grid;
     }
 
     private bool IsVictory() => PlayerState.PlayerX == 5 || PlayerState.PlayerY == 5;
