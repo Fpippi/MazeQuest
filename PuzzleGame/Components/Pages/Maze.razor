@@ -6,14 +6,11 @@
 
 <h3>Maze</h3>
 
-<div>
-    <p>Player Position: X = @PlayerState.PlayerX, Y = @PlayerState.PlayerY</p>
-</div>
-
-<Difficulty GridChanged="@SetGrid" />
-
-@if(GridState.DifficultyChosen != MazeGame.Services.Difficulty.None)
+@if (GridState.DifficultyChosen != MazeGame.Services.Difficulty.None)
 {
+    <div>
+        <p>Player Position: X = @PlayerState.PlayerX, Y = @PlayerState.PlayerY</p>
+    </div>
     <Labyrinth Grid="GridState.Grid" PlayerX="PlayerState.PlayerX" PlayerY="PlayerState.PlayerY" Difficulty="GridState.DifficultyChosen" />
     <div class="controls">
         <div style="display: flex; justify-content: center;">
@@ -27,6 +24,10 @@
             <button class="control-button" style="order: 4;" @onclick="MoveDown">⬇️</button>
         </div>
     </div>
+}
+else
+{
+    <Difficulty GridChanged="@SetGrid" />
 }
 
 @if (hasWon)
@@ -53,16 +54,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-rows: repeat(6, 30px);
-        grid-template-columns: repeat(6, 30px);
-    }
-
-    .row {
-        display: contents;
     }
 
     .cell {
@@ -133,7 +124,7 @@
 
     private void MoveUp()
     {
-        if (PlayerState.PlayerX > 0 && GridState.Grid[PlayerState.PlayerX - 1, PlayerState.PlayerY] == 0)
+        if (CanMove(PlayerState.PlayerX - 1, PlayerState.PlayerY))
         {
             PlayerState.PlayerX--;
             CheckVictory();
@@ -143,35 +134,39 @@
 
     private void MoveDown()
     {
-        if (PlayerState.PlayerX < GridState.Grid.GetLength(0) - 1 && GridState.Grid[PlayerState.PlayerX + 1, PlayerState.PlayerY] == 0)
+        if (CanMove(PlayerState.PlayerX + 1, PlayerState.PlayerY))
         {
             PlayerState.PlayerX++;
             CheckVictory();
             StateHasChanged();
-
         }
     }
 
     private void MoveLeft()
     {
-        if (PlayerState.PlayerY > 0 && GridState.Grid[PlayerState.PlayerX, PlayerState.PlayerY - 1] == 0)
+        if (CanMove(PlayerState.PlayerX, PlayerState.PlayerY - 1))
         {
             PlayerState.PlayerY--;
             CheckVictory();
             StateHasChanged();
-
         }
     }
 
     private void MoveRight()
     {
-        if (PlayerState.PlayerY < GridState.Grid.GetLength(1) - 1 && GridState.Grid[PlayerState.PlayerX, PlayerState.PlayerY + 1] == 0)
+        if (CanMove(PlayerState.PlayerX, PlayerState.PlayerY + 1))
         {
             PlayerState.PlayerY++;
             CheckVictory();
             StateHasChanged();
-
         }
+    }
+
+    private bool CanMove(int x, int y)
+    {
+        return x >= 0 && x < GridState.Grid.GetLength(0) &&
+               y >= 0 && y < GridState.Grid.GetLength(1) &&
+               GridState.Grid[x, y] == 0;
     }
 
     private void CheckVictory()
@@ -184,17 +179,97 @@
 
     private void ResetGame()
     {
-        PlayerState.PlayerX = 1;
-        PlayerState.PlayerY = 1;
+        GridState.DifficultyChosen = MazeGame.Services.Difficulty.None;
+        PlacePlayerOnEmptyCell();
         hasWon = false;
         StateHasChanged();
-
     }
 
     private void SetGrid(int[,] grid)
     {
         GridState.Grid = grid;
+        PlacePlayerOnEmptyCell();
     }
 
-    private bool IsVictory() => PlayerState.PlayerX == 5 || PlayerState.PlayerY == 5;
+    private void PlacePlayerOnEmptyCell()
+    {
+        int rows = GridState.Grid.GetLength(0);
+        int cols = GridState.Grid.GetLength(1);
+        int centerX = rows / 2;
+        int centerY = cols / 2;
+        int maxDistanceFromCenter = Math.Min(centerX, centerY);
+        int playerX = -1;
+        int playerY = -1;
+
+        // Check cells starting from the center and expanding outward
+        for (int distance = 0; distance <= maxDistanceFromCenter; distance++)
+        {
+            for (int i = centerX - distance; i <= centerX + distance; i++)
+            {
+                if (i < 0 || i >= rows) continue;
+
+                for (int j = centerY - distance; j <= centerY + distance; j++)
+                {
+                    if (j < 0 || j >= cols) continue;
+
+                    if (GridState.Grid[i, j] == 0 && i > 0 && i < rows - 1 && j > 0 && j < cols - 1)
+                    {
+                        playerX = i;
+                        playerY = j;
+                        break;
+                    }
+                }
+
+                if (playerX != -1 && playerY != -1)
+                {
+                    break;
+                }
+            }
+
+            if (playerX != -1 && playerY != -1)
+            {
+                break;
+            }
+        }
+
+        if (playerX == -1 || playerY == -1)
+        {
+            // No empty cell found within the center region
+            // Place the player on the first empty cell found
+            for (int i = 1; i < rows - 1; i++)
+            {
+                for (int j = 1; j < cols - 1; j++)
+                {
+                    if (GridState.Grid[i, j] == 0)
+                    {
+                        playerX = i;
+                        playerY = j;
+                        break;
+                    }
+                }
+
+                if (playerX != -1 && playerY != -1)
+                {
+                    break;
+                }
+            }
+        }
+
+        PlayerState.PlayerX = playerX;
+        PlayerState.PlayerY = playerY;
+    }
+
+
+    
+    private bool IsVictory()
+    {
+        int lastRow = GridState.Grid.GetLength(0) - 1;
+        int lastColumn = GridState.Grid.GetLength(1) - 1;
+
+        // Controlla se il giocatore è su uno dei bordi
+        return PlayerState.PlayerX == 0 || PlayerState.PlayerX == lastRow ||
+               PlayerState.PlayerY == 0 || PlayerState.PlayerY == lastColumn;
+    }
+
+
 }

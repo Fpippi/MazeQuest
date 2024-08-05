@@ -9,36 +9,58 @@ namespace MazeGame.Services
             set
             {
                 _grid = value;
-                NotifyStateChanged();
             }
         }
 
-        private void NotifyStateChanged() => OnChange?.Invoke();
+        public Difficulty DifficultyChosen { get; set; } = Difficulty.None;
 
-        public delegate void StateChangedHandler();
-        public event StateChangedHandler OnChange;
-
-        public required Difficulty DifficultyChosen { get; set; } = Difficulty.None;
         public int[,] RandomGrid(Difficulty difficulty)
         {
-            int size = 6;
+            int size = GetGridSize(difficulty);
+            int[,] grid = InitializeGrid(size);
+            int accessibleCells = CalculateAccessibleCells(size);
 
-            switch (difficulty)
+            Random random = new Random();
+            int startX = random.Next(1, size - 1);
+            int startY = random.Next(1, size - 1);
+            grid[startX, startY] = 0;
+            accessibleCells--;
+
+            int currentX = startX;
+            int currentY = startY;
+
+            while (IsInsideGrid(currentX, currentY, size) && accessibleCells > 0)
             {
-                case Difficulty.Easy:
-                    size = 6;
-                    break;
-                case Difficulty.Medium:
-                    size = 8;
-                    break;
-                case Difficulty.Hard:
-                    size = 10;
-                    break;
-                case Difficulty.None:
-                    size = 6;
-                    break;
+                int direction = random.Next(0, 4);
+                if (TryMoveInDirection(direction, ref currentX, ref currentY, grid, ref accessibleCells))
+                {
+                    continue;
+                }
+
+                int additionalPaths = random.Next(0, 2);
+                for (int i = 0; i < additionalPaths && accessibleCells > 0; i++)
+                {
+                    int randomDirection = random.Next(0, 4);
+                    TryMoveInDirection(randomDirection, ref currentX, ref currentY, grid, ref accessibleCells);
+                }
             }
 
+            return grid;
+        }
+
+        private int GetGridSize(Difficulty difficulty)
+        {
+            return difficulty switch
+            {
+                Difficulty.Easy => 6,
+                Difficulty.Medium => 8,
+                Difficulty.Hard => 10,
+                _ => throw new InvalidOperationException("Difficulty not set"),
+            };
+        }
+
+        private int[,] InitializeGrid(int size)
+        {
             int[,] grid = new int[size, size];
             for (int i = 0; i < size; i++)
             {
@@ -62,6 +84,64 @@ namespace MazeGame.Services
                 }
             }
             return grid;
+        }
+
+        private int CalculateAccessibleCells(int size)
+        {
+            return (int)Math.Ceiling((size - 2) * (size - 2) * 0.4);
+        }
+
+        private bool IsInsideGrid(int x, int y, int size)
+        {
+            return x != 0 && x != size - 1 && y != 0 && y != size - 1;
+        }
+
+        private bool TryMoveInDirection(int direction, ref int x, ref int y, int[,] grid, ref int accessibleCells)
+        {
+            switch (direction)
+            {
+                case 0: // Up
+                    if (x - 2 >= 0 && grid[x - 2, y] == 1)
+                    {
+                        grid[x - 1, y] = 0;
+                        grid[x - 2, y] = 0;
+                        x -= 2;
+                        accessibleCells--;
+                        return true;
+                    }
+                    break;
+                case 1: // Right
+                    if (y + 2 < grid.GetLength(1) && grid[x, y + 2] == 1)
+                    {
+                        grid[x, y + 1] = 0;
+                        grid[x, y + 2] = 0;
+                        y += 2;
+                        accessibleCells--;
+                        return true;
+                    }
+                    break;
+                case 2: // Down
+                    if (x + 2 < grid.GetLength(0) && grid[x + 2, y] == 1)
+                    {
+                        grid[x + 1, y] = 0;
+                        grid[x + 2, y] = 0;
+                        x += 2;
+                        accessibleCells--;
+                        return true;
+                    }
+                    break;
+                case 3: // Left
+                    if (y - 2 >= 0 && grid[x, y - 2] == 1)
+                    {
+                        grid[x, y - 1] = 0;
+                        grid[x, y - 2] = 0;
+                        y -= 2;
+                        accessibleCells--;
+                        return true;
+                    }
+                    break;
+            }
+            return false;
         }
     }
 

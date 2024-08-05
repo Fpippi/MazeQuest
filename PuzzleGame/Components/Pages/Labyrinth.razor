@@ -7,19 +7,23 @@
 {
     <div class="controls">
         <div class="grid">
-            @for (int i = 0; i < GridState.Grid.GetLength(0); i++)
-            {
-                <div class="row">
-                    @for (int j = 0; j < GridState.Grid.GetLength(1); j++)
-                    {
-                        <div class="cell @(GridState.Grid[i, j] == 1 ? "wall" : "path") @(i == PlayerX && j == PlayerY ? "player" : "")">
-                        </div>
-                    }
-                </div>
-            }
+            @RenderGrid()
         </div>
     </div>
 }
+
+<style>
+    .grid {
+        display: grid;
+        grid-template-rows: repeat(@GridState.Grid.GetLength(0), 30px);
+        grid-template-columns: repeat(@GridState.Grid.GetLength(1), 30px);
+    }
+
+    .row {
+        display: contents;
+    }
+
+</style>
 
 
 @code {
@@ -37,5 +41,26 @@
         {
             Grid = GridState.RandomGrid(Difficulty);
         }
+    }
+
+    private RenderFragment RenderGrid()
+    {
+        return builder =>
+        {
+            for (int i = 0; i < GridState.Grid.GetLength(0); i++)
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "row");
+
+                for (int j = 0; j < GridState.Grid.GetLength(1); j++)
+                {
+                    builder.OpenElement(2, "div");
+                    builder.AddAttribute(3, "class", $"cell {(GridState.Grid[i, j] == 1 ? "wall" : "path")} {(i == PlayerX && j == PlayerY ? "player" : "")}");
+                    builder.CloseElement();
+                }
+
+                builder.CloseElement();
+            }
+        };
     }
 }
