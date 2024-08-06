@@ -34,7 +34,7 @@
     {
         if (SelectedDifficulty != MazeGame.Services.Difficulty.None)
         {
-            GridState.Grid = GridState.RandomGrid(SelectedDifficulty);
+            GridState.Grid = GridState.GenerateRandomGrid(SelectedDifficulty);
             GridState.DifficultyChosen = SelectedDifficulty;
             await GridChanged.InvokeAsync(GridState.Grid);
         }

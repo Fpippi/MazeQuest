@@ -33,15 +33,15 @@
     [Parameter] public required int PlayerY { get; set; }
     [Parameter] public required MazeGame.Services.Difficulty Difficulty { get; set; }
 
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
+    // protected override void OnParametersSet()
+    // {
+    //     base.OnParametersSet();
         
-        if (Difficulty != MazeGame.Services.Difficulty.None)
-        {
-            Grid = GridState.RandomGrid(Difficulty);
-        }
-    }
+    //     if (Difficulty != MazeGame.Services.Difficulty.None && Grid == null)
+    //     {
+    //         Grid = GridState.RandomGrid(Difficulty);
+    //     }
+    // }
 
     private RenderFragment RenderGrid()
     {
