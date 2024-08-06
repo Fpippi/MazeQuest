@@ -11,25 +11,40 @@ namespace MazeGame.Services
 
         public Difficulty DifficultyChosen { get; set; } = Difficulty.None;
 
+        // Generates a random grid based on the specified difficulty level.
         public int[,] GenerateRandomGrid(Difficulty difficulty)
         {
+            // Determine the size of the grid based on the difficulty level.
             int size = GetGridSize(difficulty);
+
+            // Initialize the grid with all walls.
             int[,] grid = InitializeGrid(size);
+
+            // Calculate the total number of cells in the grid.
             int totalCells = (size - 2) * (size - 2);
+
+            // Calculate the target number of accessible cells.
             int accessibleCellsTarget = (int)Math.Ceiling(totalCells * 0.3);
 
+            // Create a random number generator.
             Random random = new Random();
+
+            // Create a stack to keep track of visited cells.
             Stack<(int x, int y)> stack = new Stack<(int x, int y)>();
 
+            // Choose a random starting position and mark it as accessible.
             int startX = random.Next(1, size - 1);
             int startY = random.Next(1, size - 1);
             grid[startX, startY] = 0;
             int accessibleCells = 1;
 
+            // Push the starting position onto the stack.
             stack.Push((startX, startY));
 
+            // Flag to track if the border has been reached.
             bool reachedBorder = false;
 
+            // Generate the maze by randomly carving paths.
             while (stack.Count > 0 && accessibleCells < accessibleCellsTarget)
             {
                 var (currentX, currentY) = stack.Peek();
@@ -54,12 +69,14 @@ namespace MazeGame.Services
                 }
             }
 
+            // If the border has not been reached, force a path to the border.
             if (!reachedBorder)
             {
                 var (finalX, finalY) = stack.Peek();
                 ForcePathToBorder(finalX, finalY, size, grid, ref accessibleCells);
             }
 
+            // Fill the remaining cells randomly until the target number of accessible cells is reached.
             while (accessibleCells < accessibleCellsTarget)
             {
                 int x = random.Next(1, size - 1);
@@ -72,11 +89,14 @@ namespace MazeGame.Services
                 }
             }
 
+            // Ensure that at least one border cell is accessible.
             EnsureAccessibleBorderCell(size, grid);
 
+            // Return the generated grid.
             return grid;
         }
 
+        // Returns the size of the grid based on the specified difficulty level.
         private int GetGridSize(Difficulty difficulty)
         {
             return difficulty switch
@@ -88,6 +108,7 @@ namespace MazeGame.Services
             };
         }
 
+        // Initializes the grid with all walls.
         private int[,] InitializeGrid(int size)
         {
             int[,] grid = new int[size, size];
@@ -108,6 +129,7 @@ namespace MazeGame.Services
             return grid;
         }
 
+        // Returns a list of accessible neighbors for the specified cell.
         private List<(int x, int y)> GetAccessibleNeighbors(int x, int y, int size, int[,] grid)
         {
             var neighbors = new List<(int, int)>();
@@ -118,6 +140,7 @@ namespace MazeGame.Services
             return neighbors;
         }
 
+        // Forces a path from the specified cell to the border of the grid.
         private void ForcePathToBorder(int x, int y, int size, int[,] grid, ref int accessibleCells)
         {
             Random random = new Random();
@@ -125,9 +148,9 @@ namespace MazeGame.Services
             while (!(x == 1 || x == size - 2 || y == 1 || y == size - 2))
             {
                 var directions = new List<(int, int)>
-                    {
-                        (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)
-                    };
+                        {
+                            (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)
+                        };
 
                 var validDirections = directions.Where(d => IsInsideGrid(d.Item1, d.Item2, size) && grid[d.Item1, d.Item2] == 1).ToList();
 
@@ -143,11 +166,13 @@ namespace MazeGame.Services
             }
         }
 
+        // Checks if the specified cell is inside the grid.
         private bool IsInsideGrid(int x, int y, int size)
         {
             return x > 0 && x < size - 1 && y > 0 && y < size - 1;
         }
 
+        // Ensures that at least one border cell is accessible.
         private void EnsureAccessibleBorderCell(int size, int[,] grid)
         {
             Random random = new Random();
@@ -174,13 +199,14 @@ namespace MazeGame.Services
             }
         }
 
+        // Creates a path from the specified cell to the border of the grid.
         private void CreatePathToBorder(int x, int y, int size, int[,] grid)
         {
             Random random = new Random();
             List<(int dx, int dy)> directions = new List<(int, int)>
-                {
-                    (1, 0), (-1, 0), (0, 1), (0, -1)
-                };
+                    {
+                        (1, 0), (-1, 0), (0, 1), (0, -1)
+                    };
 
             while (true)
             {
